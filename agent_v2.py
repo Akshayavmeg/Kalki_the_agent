@@ -1,10 +1,13 @@
+from faster_whisper import WhisperModel
+from ollama import chat
+
 import sounddevice as sd
 from scipy.io.wavfile import write
-from faster_whisper import WhisperModel
 
 import subprocess
 import pyautogui
 import time
+import json
 
 # Supported Apps
 apps = {
@@ -13,7 +16,39 @@ apps = {
     "chrome": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     "vs code": r"C:\Users\aksha\AppData\Local\Programs\Microsoft VS Code\Code.exe"
 }
-# Record Audio
+
+SYSTEM_PROMPT = """
+You are an AI desktop agent.
+
+Return ONLY JSON.
+
+Examples:
+
+User: Open calculator
+
+Output:
+{"app":"calculator","action":"open"}
+
+User: Open notepad and type hello world
+
+Output:
+{"app":"notepad","action":"open_and_type","text":"hello world"}
+
+User: Open VS Code and type hello world
+
+Output:
+{"app":"vs code","action":"open_and_type","text":"hello world"}
+
+User: Open Chrome
+
+Output:
+{"app":"chrome","action":"open"}
+"""
+
+# -----------------------
+# Record Voice
+# -----------------------
+
 duration = 5
 sample_rate = 16000
 
@@ -32,6 +67,10 @@ write("recording.wav", sample_rate, audio)
 
 print("Transcribing...")
 
+# -----------------------
+# Whisper
+# -----------------------
+
 model = WhisperModel("base")
 
 segments, info = model.transcribe("recording.wav")
@@ -41,31 +80,65 @@ command = ""
 for segment in segments:
     command += segment.text
 
-command = command.lower()
+command = command.lower().strip()
 
 print("Heard:", command)
 
-# Detect App
-selected_app = None
+# -----------------------
+# Ollama
+# -----------------------
 
-for app in apps:
-    if app in command:
-        selected_app = app
-        break
+response = chat(
+    model="llama3.2:3b",
+    messages=[
+        {
+            "role": "system",
+            "content": SYSTEM_PROMPT
+        },
+        {
+            "role": "user",
+            "content": command
+        }
+    ]
+)
 
-if selected_app:
+result = response["message"]["content"]
 
-    subprocess.Popen(apps[selected_app])
+print("\nLLM Output:")
+print(result)
 
-    print(f"Opening {selected_app}")
+# -----------------------
+# Parse JSON
+# -----------------------
 
-    if "type" in command:
+try:
+    data = json.loads(result)
 
-        text = command.split("type", 1)[1].strip()
+except Exception as e:
+    print("JSON Error:", e)
+    exit()
 
-        time.sleep(2)
+app = data.get("app")
+action = data.get("action")
 
-        pyautogui.write(text, interval=0.05)
+if app not in apps:
+    print("Unsupported app:", app)
+    exit()
 
-else:
-    print("No supported app found")
+# -----------------------
+# Execute Action
+# -----------------------
+
+subprocess.Popen(apps[app])
+
+print("Opening:", app)
+
+if action == "open_and_type":
+
+    text = data.get("text", "")
+
+    time.sleep(2)
+
+    pyautogui.write(text, interval=0.05)
+
+    print("Typed:", text)
