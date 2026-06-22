@@ -1,0 +1,114 @@
+"import subprocess"
+subprocess allows Python to start and interact with other programs.
+
+"subprocess.Popen("notepad.exe")" #open_app.py
+Popen() starts a new process.
+"notepad.exe" is the executable file for Windows Notepad.
+Python launches Notepad and immediately continues running without waiting for Notepad to close.
+
+"pip install pyautogui"    #type_text.py
+installs the PyAutoGUI library, which allows Python to control the mouse and keyboard automatically.
+
+"pip install faster-whisper sounddevice scipy"
+"faster-whisper" : Converts speech → text (transcription).
+"sounddevice": Records audio from your microphone. Captures your voice input.
+
+"""""""""""""""""""""""""
+import sounddevice as sd
+from scipy.io.wavfile import write
+from faster_whisper import WhisperModel
+duration = 5
+sample_rate = 16000
+print("Speak now...")
+audio = sd.rec(
+    int(duration * sample_rate),
+    samplerate=sample_rate,
+    channels=1,
+    dtype="int16"
+)
+sd.wait()
+write("recording.wav", sample_rate, audio)
+print("Loading model...")
+model = WhisperModel("base")
+print("Transcribing...")
+segments, info = model.transcribe("recording.wav")
+for segment in segments:
+    print(segment.text)""""""""""""""""""""""
+sounddevice → records audio from your microphone.
+write from scipy → saves audio as a .wav file.
+WhisperModel → converts speech into text.
+duration = 5 → record for 5 seconds.
+sample_rate = 16000 → 16,000 audio samples per second (good for speech recognition).
+5 * 16000 = 80000
+Records 80,000 audio samples from the microphone.
+Parameters:
+channels=1 → mono audio.
+dtype="int16" → standard WAV format.
+sd.wait()
+Wait for recording to finish
+write("recording.wav", sample_rate, audio) means save the audio into recording.wav file
+
+"model = WhisperModel("base")" : means it does not store what you spoke.It creates and loads the Whisper AI model into the variable model.
+*Load the Whisper "base" speech recognition brain
+and store it in the variable named model.
+"segments, info = model.transcribe("recording.wav")" : Now the model listens to recording.wav and converts it to text. 
+
+
+What stores your speech?
+
+Your speech is first stored in:
+
+audio = sd.rec(...)
+
+Then saved as:
+
+recording.wav
+
+Then Whisper converts it:
+
+segments, info = model.transcribe("recording.wav")
+
+The recognized text is stored in segments.
+
+
+
+""""""""""""""""""""""""""""
+Suppose you say:
+open notepad and type hello world
+This line stores it:
+command = input("Say a command: ")
+Now:
+command = "open notepad and type hello world"
+Next line:
+command = command.lower()
+Makes everything lowercase
+command = "open notepad and type hello world"
+The if statement:
+if "open notepad and type" in command:
+Python checks: Does command contain "open notepad and type"?
+Your command is: open notepad and type hello world
+So the answer is Yes ✅
+The important line
+text = command.replace("open notepad and type", "").strip()
+
+Think of replace() as an eraser.
+
+It removes:
+
+open notepad and type
+
+from:
+
+open notepad and type hello world
+
+Result:
+
+ hello world
+
+Notice the extra space at the beginning.
+
+Then:
+
+.strip()
+
+removes extra spaces.
