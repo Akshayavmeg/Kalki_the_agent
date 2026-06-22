@@ -9,9 +9,10 @@ import time
 # Supported Apps
 apps = {
     "notepad": "notepad.exe",
-    "calculator": "calc.exe"
+    "calculator": "calc.exe",
+    "chrome": r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    "vs code": r"C:\Users\aksha\AppData\Local\Programs\Microsoft VS Code\Code.exe"
 }
-
 # Record Audio
 duration = 5
 sample_rate = 16000
