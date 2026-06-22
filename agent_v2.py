@@ -8,6 +8,7 @@ import subprocess
 import pyautogui
 import time
 import json
+import webbrowser
 
 # Supported Apps
 apps = {
@@ -19,6 +20,17 @@ apps = {
 
 SYSTEM_PROMPT = """
 You are an AI desktop agent.
+
+Allowed actions ONLY:
+
+open
+open_and_type
+calculate
+search
+
+Never invent new actions.
+Always use one of the allowed actions.
+
 
 Return ONLY valid JSON.
 
@@ -58,7 +70,19 @@ User: Open notepad and type hello world
 
 Output:
 {"app":"notepad","action":"open_and_type","text":"hello world"}
+User: Open Chrome and search AI agents
 
+Output:
+{"app":"chrome","action":"search","query":"AI agents"}
+User: Open VS Code and write a Python hello world program
+
+Output:
+{"app":"vs code","action":"open_and_type","text":"print('Hello World')"}
+
+User: Open VS Code and write a Python for loop from 1 to 10
+
+Output:
+{"app":"vs code","action":"open_and_type","text":"for i in range(1,11):\n    print(i)"}
 Return ONLY JSON.
 """
 
@@ -146,20 +170,37 @@ if app not in apps:
 # Execute Action
 # -----------------------
 
-subprocess.Popen(apps[app])
+if action != "search":
+    subprocess.Popen(apps[app])
 
 print("Opening:", app)
-
 if action == "open_and_type":
 
     text = data.get("text", "")
 
-    time.sleep(2)
+    if app == "vs code":
+
+        time.sleep(5)
+
+        pyautogui.click(500, 500)
+
+        time.sleep(1)
+
+        pyautogui.hotkey("ctrl", "n")
+
+        time.sleep(1)
+
+    else:
+
+        time.sleep(2)
 
     pyautogui.write(text, interval=0.05)
 
     print("Typed:", text)
-if action == "calculate":
+
+    pyautogui.write(text, interval=0.05)
+
+    print("Typed:", text)
 
     expression = data.get("expression", "")
 
@@ -170,3 +211,14 @@ if action == "calculate":
     pyautogui.press("enter")
 
     print("Calculated:", expression)
+
+if "search" in action:
+
+    query = data.get("query", "")
+
+    subprocess.Popen([
+        apps["chrome"],
+        f"https://www.google.com/search?q={query}"
+    ])
+
+    print("Searching:", query)
