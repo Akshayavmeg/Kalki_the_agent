@@ -20,7 +20,7 @@ apps = {
 SYSTEM_PROMPT = """
 You are an AI desktop agent.
 
-Return ONLY JSON.
+Return ONLY valid JSON.
 
 Examples:
 
@@ -29,20 +29,37 @@ User: Open calculator
 Output:
 {"app":"calculator","action":"open"}
 
-User: Open notepad and type hello world
+User: Calculate 567 times 89
 
 Output:
-{"app":"notepad","action":"open_and_type","text":"hello world"}
+{"app":"calculator","action":"calculate","expression":"567*89"}
+
+User: Calculate 100 plus 200
+
+Output:
+{"app":"calculator","action":"calculate","expression":"100+200"}
+
+User: Open Chrome
+
+Output:
+{"app":"chrome","action":"open"}
+
+User: Open Chrome and search AI agents
+
+Output:
+{"app":"chrome","action":"search","query":"AI agents"}
 
 User: Open VS Code and type hello world
 
 Output:
 {"app":"vs code","action":"open_and_type","text":"hello world"}
 
-User: Open Chrome
+User: Open notepad and type hello world
 
 Output:
-{"app":"chrome","action":"open"}
+{"app":"notepad","action":"open_and_type","text":"hello world"}
+
+Return ONLY JSON.
 """
 
 # -----------------------
@@ -142,3 +159,14 @@ if action == "open_and_type":
     pyautogui.write(text, interval=0.05)
 
     print("Typed:", text)
+if action == "calculate":
+
+    expression = data.get("expression", "")
+
+    time.sleep(2)
+
+    pyautogui.write(expression)
+
+    pyautogui.press("enter")
+
+    print("Calculated:", expression)
